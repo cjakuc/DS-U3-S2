@@ -32,8 +32,8 @@ charachter_types_items = ['charactercreator_mage',
 subclasses = ['mage','thief','cleric','fighter']
 
 print("How many of each specific subclass?")
-i = 0
-for items in charachter_types_items:
+
+for i, items in enumerate(charachter_types_items):
     subclass_query = f"""
     SELECT
         count(distinct character_ptr_id) as subclass_count
@@ -42,7 +42,6 @@ for items in charachter_types_items:
      """
     subclass_result = cursor.execute(subclass_query).fetchone()
     print(f"There are {subclass_result[0]} charcters of subclass {subclasses[i]}")
-    i += 1
 
 # Question 3: How many total items
 item_query = """

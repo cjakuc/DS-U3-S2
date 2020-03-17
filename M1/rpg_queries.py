@@ -32,8 +32,8 @@ charachter_types_items = ['charactercreator_mage',
 subclasses = ['mage','thief','cleric','fighter']
 
 print("How many of each specific subclass?")
-
-for i, items in enumerate(charachter_types_items):
+i = 0
+for items in charachter_types_items:
     subclass_query = f"""
     SELECT
         count(distinct character_ptr_id) as subclass_count
@@ -42,6 +42,7 @@ for i, items in enumerate(charachter_types_items):
      """
     subclass_result = cursor.execute(subclass_query).fetchone()
     print(f"There are {subclass_result[0]} charcters of subclass {subclasses[i]}")
+    i += 1
 
 # Question 3: How many total items
 item_query = """
@@ -88,19 +89,26 @@ print(char_item_df)
 # Question 6: How many weapons does each character have? (First 20 rows)
 # print("How many weapons does each character have? (First 20 rows)")
 
-# char_weapon_query = """
-# SELECT
-# 	ch.character_id
-# 	,count(distinct ch.item_id) as item_count
-# 	,count(distinct armory_weapon.item_ptr_id) as weapon_count
-# FROM
-# 	charactercreator_character_inventory as ch
-# GROUP BY 
-# 	ch.character_id
-# LEFT JOIN armory_item ON armory_item.item_id = ch.item_id
-# LEFT JOIN armory_weapon ON armory_item.item_id = armory_weapon.item_ptr_id
-# LIMIT 20
-# """
+char_weapon_query = """
+SELECT
+  c.character_id
+  ,c.name as char_name
+  ,count(inv.item_id) as item_count
+  ,count(w.item_ptr_id) as weapon_count
+FROM charactercreator_character c
+LEFT JOIN charactercreator_character_inventory inv ON inv.character_id = c.character_id
+LEFT JOIN armory_weapon w on inv.item_id = w.item_ptr_id
+GROUP BY c.character_id -- row per what?
+LIMIT 20
+"""
+
+char_weapon_result = cursor.execute(char_weapon_query).fetchall()
+char_weapon_df = pd.DataFrame(char_weapon_result, columns=['charachter_id',
+															'char_name',
+															'item_count',
+															'weapon_count'])
+char_weapon_df.set_index('charachter_id')
+print(char_weapon_df)
 
 # Question 7: On average, how many items does each character have?
 print("On average, how many items does each character have?")
@@ -123,4 +131,5 @@ avg_char_item = avg_char_item_df['Item_Count'].mean()
 print(f"The average item count is {avg_char_item:,.2f}")
 
 # Question 8: On average, how many weapons does each chararacter have
-# print("On average, how many weapons does each character have?")
+print("On average, how many weapons does each character have?")
+print(char_weapon_df['weapon_count'].mean())
